@@ -1,0 +1,804 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Eagle Gate - Property Search</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            min-height: 100vh;
+            gap: 30px;
+        }
+
+        .phone-frame {
+            background: #f5f6f8;
+            overflow: hidden;
+            position: relative;
+            width: 100%;
+            padding-bottom: 20px;
+        }
+
+        /* ── HEADER ── */
+        .header {
+            background: #fff;
+            padding: 5px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: relative;
+            z-index: 10px;
+        }
+
+        .logo-wrap {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            width: 75px;
+        }
+
+        .logo-wrap img {
+            width: 100%;
+        }
+
+
+
+        .hamburger {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            cursor: pointer;
+        }
+
+        .hamburger span {
+            display: block;
+            width: 22px;
+            height: 2px;
+            background: #4a9d8f;
+            border-radius: 2px;
+        }
+
+        /* ── SLIDER ── */
+        .slider-wrap {
+            position: relative;
+            width: 100%;
+            height: 350px;
+            overflow: hidden;
+        }
+
+        .slide {
+            position: absolute;
+            inset: 0;
+            opacity: 0;
+            transition: opacity 0.9s ease;
+        }
+
+        .slide.active {
+            opacity: 1;
+        }
+
+        .slide-1 {
+            background: linear-gradient(160deg, #0f2c3a 0%, #1e5f6e 55%, #4a9d8f 100%);
+        }
+
+        .slide-2 {
+            background: linear-gradient(160deg, #1a2a1a 0%, #2e5e3a 55%, #5aaa6a 100%);
+        }
+
+        .slide-3 {
+            background: linear-gradient(160deg, #2a1a10 0%, #7a4a20 55%, #c8843a 100%);
+        }
+
+        .slide-4 {
+            background: linear-gradient(160deg, #1a1a2a 0%, #2a3a6e 55%, #4a6abf 100%);
+        }
+
+        .slide-overlay {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(to bottom, rgba(0, 0, 0, 0.1) 0%, rgba(0, 0, 0, 0.55) 100%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .slide-overlay img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .slide-label {
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 3px;
+            color: rgba(255, 255, 255, 0.7);
+            text-transform: uppercase;
+        }
+
+        .slide-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: #fff;
+            text-align: center;
+            text-shadow: 0 2px 12px rgba(0, 0, 0, 0.5);
+            padding: 0 28px;
+            line-height: 1.35;
+        }
+
+        .dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.45);
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .dot.active {
+            background: #fff;
+            width: 20px;
+            border-radius: 4px;
+        }
+
+        /* ── SEARCH FORM — overlaps slider ── */
+        .search-panel {
+            max-width: 80%;
+            margin: auto;
+            background: rgba(255, 255, 255, 0.96);
+            padding: 30px;
+            margin-top: -30px;
+            position: relative;
+            z-index: 6;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .select-wrapper {
+            position: relative;
+        }
+
+        .select-wrapper::after {
+            content: '';
+            position: absolute;
+            right: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            border-left: 5px solid transparent;
+            border-right: 5px solid transparent;
+            border-top: 6px solid #4a9d8f;
+            pointer-events: none;
+        }
+
+        select,
+        input[type="number"] {
+            width: 100%;
+            padding: 8px 14px;
+            border: 1.5px solid #dde2e8;
+            font-size: 14px;
+            color: #555;
+            background: #fff;
+            appearance: none;
+            -webkit-appearance: none;
+            cursor: pointer;
+            outline: none;
+            font-family: inherit;
+            transition: border-color 0.2s;
+        }
+
+        select:focus,
+        input[type="number"]:focus {
+            border-color: #4a9d8f;
+        }
+
+        .price-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 15px;
+        }
+
+        .price-row input {
+            width: 100%;
+            padding: 8px 14px;
+            border: 1.5px solid #dde2e8;
+            font-size: 14px;
+            color: #555;
+            background: #fff;
+            appearance: none;
+            -webkit-appearance: none;
+            cursor: pointer;
+            outline: none;
+            font-family: inherit;
+            transition: border-color 0.2s;
+        }
+
+        .price-row input:focus {
+            border-color: #4a9d8f;
+        }
+
+        .price-label {
+            font-size: 18px;
+            font-weight: bold;
+            color: #6A6A6A;
+            white-space: nowrap;
+        }
+
+        .listing-type-row {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+
+        .listing-btn {
+            flex: 1;
+            padding: 9px 4px;
+            border: 1.5px solid #dde2e8;
+            background: #fff;
+            font-size: 13px;
+            color: #555;
+            cursor: pointer;
+            text-align: center;
+            font-weight: 500;
+            font-family: inherit;
+            transition: all 0.2s;
+        }
+
+        .listing-btn:hover {
+            border-color: #4a9d8f;
+            color: #4a9d8f;
+        }
+
+        .listing-btn.active {
+            background: #4a9d8f;
+            color: #fff;
+            border-color: #4a9d8f;
+        }
+
+        .bottom-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: 4px;
+        }
+
+        .search-btn {
+            padding: 10px 28px;
+            background-color: #F2F2F2;
+            color: #333;
+            border: none;
+            font-size: 14px;
+            font-family: inherit;
+            cursor: pointer;
+            letter-spacing: 0.5px;
+            transition: background 0.2s;
+            width: 100%;
+        }
+
+        .search-btn:hover {
+            background: #cac6c673;
+        }
+
+
+
+        .section-title {
+            text-align: center;
+            font-size: 26px;
+            font-weight: 400;
+            color: #333;
+            margin-bottom: 28px;
+            letter-spacing: 0.3px;
+        }
+
+        .cards-list {
+            max-width: 1050px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+            padding: 20px;
+        }
+
+        /* ── CARD ── */
+        .card {
+            display: flex;
+            align-items: stretch;
+            border: 1px solid #e5e8ec;
+            background: #fff;
+            margin-bottom: 18px;
+            overflow: hidden;
+            min-height: 300px;
+        }
+
+        /* LEFT — image block */
+        .card-img-wrap {
+            position: relative;
+            width: 400px;
+            min-width: 310px;
+            flex-shrink: 0;
+            background: #c8cdd4;
+            overflow: hidden;
+        }
+
+        /* Simulated property photo gradients */
+        .img-kitchen {
+            background: linear-gradient(135deg, #2a2520 0%, #5a4a38 40%, #9a8870 100%);
+        }
+
+        .img-hall {
+            background: linear-gradient(135deg, #1a1a20 0%, #4a4a5a 40%, #9898b0 100%);
+        }
+
+        .img-room {
+            background: linear-gradient(135deg, #252520 0%, #5a5a4a 40%, #b0b09a 100%);
+        }
+
+        /* Interior scene SVG overlay */
+        .card-img-wrap::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            opacity: 0.55;
+            background-size: cover;
+            background-position: center;
+        }
+
+        .img-kitchen::before {
+            background-image: url("./images/image.png");
+        }
+
+        .img-hall::before {
+            background-image: url("./images/image2.png");
+        }
+
+        .img-room::before {
+            background-image: url("./images/image3.png");
+        }
+
+        /* AVAILABLE badge — top left */
+        .badge-available {
+            position: absolute;
+            text-transform: uppercase;
+            z-index: 2;
+            top: 15px;
+            left: 15px;
+            background-color: #f1bf7f;
+            color: #fff;
+            padding: 5px;
+            font-size: 13px;
+            border-radius: 2px;
+        }
+
+        /* Type badge — top right */
+        .badge-type {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background-color: #ff6464;
+            color: #fff;
+            padding: 5px;
+            font-size: 13px;
+            border-radius: 2px;
+        }
+
+        /* Bottom bar on image */
+        .img-bottom {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 8px 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: linear-gradient(to top, rgba(0, 0, 0, 0.55) 0%, transparent 100%);
+            z-index: 2;
+        }
+
+        .img-location {
+            font-size: 14px;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-weight: 500;
+            text-shadow: 0 1px 4px rgba(0, 0, 0, 0.6);
+        }
+
+        .img-count {
+            font-size: 14px;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-weight: 500;
+            text-shadow: 0 1px 4px rgba(0, 0, 0, 0.6);
+        }
+
+        /* RIGHT — content block */
+        .card-body {
+            flex: 1;
+            padding: 18px 18px 12px 18px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            border-left: none;
+        }
+
+        .card-top {
+            flex: 1;
+        }
+
+        .card-title {
+            font-size: 18px;
+            color: #222;
+            margin-bottom: 6px;
+            line-height: 1.3;
+            letter-spacing: 0.1px;
+        }
+
+        .card-price {
+            font-size: 17px;
+            font-weight: 500;
+            color: #ff6464;
+        }
+
+        .card-desc {
+            font-size: 14px;
+            color: #5c727d;
+            line-height: 1.55;
+        }
+
+        /* Bottom action icons */
+        .card-actions {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            gap: 2px;
+            margin-top: 12px;
+            padding-top: 10px;
+        }
+
+        .action-btn {
+            width: 32px;
+            height: 32px;
+            border: 1px solid #dde2e8;
+            border-radius: 4px;
+            background: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: #888;
+            font-size: 13px;
+            transition: all 0.2s;
+        }
+
+        .action-btn:hover {
+            border-color: #4a9d8f;
+            color: #4a9d8f;
+        }
+
+        /* Divider between cards */
+        .card+.card {
+            border-top: none;
+        }
+
+        /* ── RESPONSIVE — tablet ── */
+        @media (max-width: 600px) {
+
+            /* Stack image on top, content below */
+            .card {
+                flex-direction: column;
+                min-height: unset;
+                margin-bottom: 14px;
+            }
+
+            .card-img-wrap {
+                width: 100%;
+                min-width: unset;
+                height: 200px;
+            }
+
+            .slider-wrap {
+                height: 170px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="phone-frame">
+
+        <!-- Header -->
+        <div class="header">
+            <div class="logo-wrap">
+                <img src="./images/logo2.png" alt="">
+            </div>
+            <div class="hamburger">
+                <span></span><span></span><span></span>
+            </div>
+        </div>
+
+        <!-- Image Slider -->
+        <div class="slider-wrap">
+
+            <div class="slide slide-1 active">
+                <div class="slide-overlay">
+                    <img src="./images/image.png" alt="">
+                </div>
+            </div>
+
+            <div class="slide slide-2">
+                <div class="slide-overlay">
+                    <img src="./images/image2.png" alt="">
+                </div>
+            </div>
+
+            <div class="slide slide-3">
+                <div class="slide-overlay">
+                    <img src="./images/image3.png" alt="">
+                </div>
+            </div>
+
+            <div class="slide slide-4">
+                <div class="slide-overlay">
+                    <img src="./images/image4.png" alt="">
+                </div>
+            </div>
+
+            <!-- Dots -->
+            <div class="slider-dots">
+                <div class="dot active" onclick="goTo(0)"></div>
+                <div class="dot" onclick="goTo(1)"></div>
+                <div class="dot" onclick="goTo(2)"></div>
+                <div class="dot" onclick="goTo(3)"></div>
+            </div>
+
+        </div>
+
+        <!-- Search Panel (overlaps slider) -->
+        <div class="search-panel">
+
+            <!-- Location -->
+            <div class="form-group">
+                <div class="select-wrapper">
+                    <select>
+                        <option value="">-- Location --</option>
+                        <option>Kuwait City</option>
+                        <option>Salmiya</option>
+                        <option>Hawalli</option>
+                        <option>Farwaniya</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Property Type -->
+            <div class="form-group">
+                <div class="select-wrapper">
+                    <select>
+                        <option value="">-- Property Type --</option>
+                        <option>Apartment</option>
+                        <option>Villa</option>
+                        <option>Office</option>
+                        <option>Land</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Price Range -->
+            <div class="price-row">
+                <input type="number" placeholder="Min">
+                <span class="price-label">KD</span>
+                <input type="number" placeholder="Max">
+            </div>
+
+            <!-- Listing Type -->
+            <div class="listing-type-row">
+                <button class="listing-btn active" onclick="setActive(this)">For Sale</button>
+                <button class="listing-btn" onclick="setActive(this)">For Rent</button>
+                <button class="listing-btn" onclick="setActive(this)">Exchange</button>
+            </div>
+
+            <!-- Bottom Row -->
+            <div class="bottom-row">
+                <button class="search-btn">SEARCH</button>
+            </div>
+
+        </div>
+
+    </div>
+
+
+
+    <div>
+
+        <h2 class="section-title">Recommended this week</h2>
+
+        <div class="cards-list">
+
+            <!-- Card 1 -->
+            <div class="card">
+                <div class="card-img-wrap img-kitchen">
+                    <span class="badge-available">AVAILABLE</span>
+                    <span class="badge-type">Duplex</span>
+                    <div class="img-bottom">
+                        <span class="img-location">📍 Abu Fatira</span>
+                        <span class="img-count">📷 20</span>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="card-top">
+                        <div class="card-title">ABU FATIRA. Spacious, modern 5 bedroom duplex</div>
+                        <div class="card-price">1,500.00KD</div>
+                        <div class="card-desc">One of a kind luxurious 5 bedroom duplexes located in Abu Fatira : Ground
+                            Level…</div>
+                    </div>
+                    <div class="card-actions">
+                        <div class="action-btn" title="Share">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="18" cy="5" r="3" />
+                                <circle cx="6" cy="12" r="3" />
+                                <circle cx="18" cy="19" r="3" />
+                                <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" />
+                                <line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
+                            </svg>
+                        </div>
+                        <div class="action-btn" title="Save">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path
+                                    d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+                            </svg>
+                        </div>
+                        <div class="action-btn" title="Add">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2.5" stroke-linecap="round">
+                                <line x1="12" y1="5" x2="12" y2="19" />
+                                <line x1="5" y1="12" x2="19" y2="12" />
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card 2 -->
+            <div class="card">
+                <div class="card-img-wrap img-hall">
+                    <span class="badge-available">AVAILABLE</span>
+                    <span class="badge-type">Floor</span>
+                    <div class="img-bottom">
+                        <span class="img-location">📍 Hateen</span>
+                        <span class="img-count">📷 24</span>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="card-top">
+                        <div class="card-title">HATEEN. 5 bedroom huge floor</div>
+                        <div class="card-price">1,200.00KD</div>
+                        <div class="card-desc">An enourmous (450m2) 5 bedroom floor located in Hateen – 5 master
+                            bedrooms total –…</div>
+                    </div>
+                    <div class="card-actions">
+                        <div class="action-btn" title="Share">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="18" cy="5" r="3" />
+                                <circle cx="6" cy="12" r="3" />
+                                <circle cx="18" cy="19" r="3" />
+                                <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" />
+                                <line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
+                            </svg>
+                        </div>
+                        <div class="action-btn" title="Save">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path
+                                    d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+                            </svg>
+                        </div>
+                        <div class="action-btn" title="Add">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2.5" stroke-linecap="round">
+                                <line x1="12" y1="5" x2="12" y2="19" />
+                                <line x1="5" y1="12" x2="19" y2="12" />
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card 3 -->
+            <div class="card">
+                <div class="card-img-wrap img-room">
+                    <span class="badge-available">AVAILABLE</span>
+                    <span class="badge-type">Floor</span>
+                    <div class="img-bottom">
+                        <span class="img-location">📍 Fnaitees</span>
+                        <span class="img-count">📷 21</span>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="card-top">
+                        <div class="card-title">FNAITEES. 4 bedroom floor with 3 balconies.</div>
+                        <div class="card-price">800.00KD</div>
+                        <div class="card-desc">A great and large unfurnished 4 bedroom floor with 3 balconies located in
+                            Fnaitees –…</div>
+                    </div>
+                    <div class="card-actions">
+                        <div class="action-btn" title="Share">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="18" cy="5" r="3" />
+                                <circle cx="6" cy="12" r="3" />
+                                <circle cx="18" cy="19" r="3" />
+                                <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" />
+                                <line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
+                            </svg>
+                        </div>
+                        <div class="action-btn" title="Save">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path
+                                    d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+                            </svg>
+                        </div>
+                        <div class="action-btn" title="Add">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2.5" stroke-linecap="round">
+                                <line x1="12" y1="5" x2="12" y2="19" />
+                                <line x1="5" y1="12" x2="19" y2="12" />
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        function setActive(btn) {
+            document.querySelectorAll('.listing-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+        }
+
+        const slides = document.querySelectorAll('.slide');
+        const dots = document.querySelectorAll('.dot');
+        let current = 0;
+        let timer;
+
+        function goTo(index) {
+            slides[current].classList.remove('active');
+            dots[current].classList.remove('active');
+            current = index;
+            slides[current].classList.add('active');
+            dots[current].classList.add('active');
+            clearInterval(timer);
+            timer = setInterval(next, 3500);
+        }
+
+        function next() { goTo((current + 1) % slides.length); }
+
+        timer = setInterval(next, 3500);
+    </script>
+
+</body>
+
+</html>
